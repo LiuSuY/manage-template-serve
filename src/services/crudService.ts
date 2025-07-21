@@ -12,9 +12,10 @@ export class CrudService {
 
     // 查询表中所有字段详细信息
     const fields = await query(
-      `SELECT *
+      `SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, 
+              IS_NULLABLE, COLUMN_DEFAULT, COLUMN_COMMENT
        FROM INFORMATION_SCHEMA.COLUMNS 
-       WHERE TABLE_NAME = ? AND TABLE_SCHEMA = DATABASE()
+       WHERE TABLE_NAME = ?
        ORDER BY ORDINAL_POSITION`,
       [tableName]
     );
@@ -50,7 +51,7 @@ export class CrudService {
 
   // 创建完整的模块文件夹结构
   private static async createModuleStructure(userData: CreateCrudData, fields: any[]): Promise<void> {
-    const { module } = userData;
+    const { module, name } = userData;
     const baseDir = `${Deno.cwd()}/src/gen/${module}`;
     const componentsDir = `${baseDir}/components`;
     const localeDir = `${baseDir}/locale`;
@@ -65,11 +66,11 @@ export class CrudService {
     }
 
     // 使用模板引擎生成各个文件
-    const indexVue = await TemplateEngine.generateIndexVue(userData, fields);
-    const dialogVue = await TemplateEngine.generateDialogVue(userData, fields);
-    const boCNLocale = await TemplateEngine.generateLocale(userData, fields, 'bo-CN');
-    const enUSLocale = await TemplateEngine.generateLocale(userData, fields, 'en-US');
-    const zhCNLocale = await TemplateEngine.generateLocale(userData, fields, 'zh-CN');
+    const indexVue = await TemplateEngine.generateIndexVue(userData, fields, name);
+    const dialogVue = await TemplateEngine.generateDialogVue(fields);
+    const boCNLocale = await TemplateEngine.generateLocale(fields, 'bo-CN');
+    const enUSLocale = await TemplateEngine.generateLocale(fields, 'en-US');
+    const zhCNLocale = await TemplateEngine.generateLocale(fields, 'zh-CN');
 
     // 写入文件
     await Deno.writeTextFile(`${baseDir}/index.vue`, indexVue);

@@ -1,58 +1,30 @@
 <template>
   <div class="container">
-    <BreadCrumb :items="['模版名称']" />
-    <a-card class="general-card" title="模版名称">
-      <a-grid>
-        <a-grid-item :span="22">
-          <a-form
-            :model="formModel"
-            :label-col-props="{ span: 8 }"
-            :wrapper-col-props="{ span: 16 }"
-            layout="inline"
-            label-align="left"
-          >
-            <a-form-item field="name" label="模版名称">
-              <a-input
-                v-model="formModel.templateName"
-                :placeholder="模版名称"
-                allow-clear
-              />
-            </a-form-item>
-            <a-form-item field="appId" label="模版ID">
-              <a-input
-                v-model="formModel.templateId"
-                :placeholder="模版ID"
-                allow-clear
-              />
-            </a-form-item>
-            <a-form-item field="phone" label="模版手机号">
-              <a-input
-                v-model="formModel.templatePhone"
-                :placeholder="模版手机号"
-                allow-clear
-              />
-            </a-form-item>
-            <a-form-item field="accessMethod" label="模版接入方式">
-              <a-select
-                v-model="formModel.accessMethod"
-                :placeholder="模版接入方式"
-                allow-clear
-              >
-                <a-option value="method1">接入方式1</a-option>
-                <a-option value="method2">接入方式2</a-option>
-              </a-select>
-            </a-form-item>
+    <BreadCrumb :items="['NAMETEMPLATE']" />
+    <a-card class="general-card" title="NAMETEMPLATE">
+      <a-grid :cols="48" class="tw:w-full">
+        <a-grid-item
+          :span="{ xs: 48, sm: 48, md: 48, lg: 42, xl: 42, xxl: 44 }"
+          class="tw:sm:mr-[0px] tw:md:mr-[0px] tw:lg:mr-[10px] tw:xl:mr-[10px] tw:xxl:mr-[10px]"
+        >
+          <a-form auto-label-width layout="horizontal" :model="formModel">
+            <a-row :gutter="24">
+              FORMTEMPLATE
+            </a-row>
           </a-form>
         </a-grid-item>
-        <a-grid-item>
-          <a-space direction="vertical" :size="18">
-            <a-button type="primary" @click="search">
+        <a-grid-item
+          :span="{ xs: 48, sm: 48, md: 48, lg: 6, xl: 6, xxl: 4 }"
+          class="tw:flex tw:justify-end"
+        >
+          <a-space direction="vertical" :size="18" class="tw:!flex tw:w-full">
+            <a-button type="primary" long @click="search">
               <template #icon>
                 <icon-search />
               </template>
               搜索
             </a-button>
-            <a-button @click="reset">
+            <a-button long @click="reset">
               <template #icon>
                 <icon-refresh />
               </template>
@@ -162,16 +134,6 @@ const formModel = ref(generateFormModel());
 const dialogVisible = ref(false);
 const dialogMode = ref<"create" | "edit" | "view">("create");
 
-// 对话框标题 - 已注释因为未使用
-/*
-const dialogTitle = computed(() => {
-  if (dialogMode.value === 'create') return '新增'
-  if (dialogMode.value === 'edit') return '编辑'
-  return '查看'
-})
-*/
-// const formRef = ref()
-
 // 弹窗表单数据
 const dialogForm = ref({});
 
@@ -197,64 +159,7 @@ const {
 } = useTable<any, any>(fetchDataFn, { current: 1, pageSize: 10 });
 
 // 定义表格列
-const columns = ref<Column[]>([
-  {
-    title: "名称",
-    dataIndex: "name",
-    ellipsis: true,
-    tooltip: true,
-    width: 150,
-  },
-  {
-    title: "应用id",
-    dataIndex: "appId",
-    ellipsis: true,
-    tooltip: true,
-    width: 150,
-  },
-  {
-    title: "手机号",
-    dataIndex: "phone",
-    ellipsis: true,
-    tooltip: true,
-    width: 150,
-  },
-  {
-    title: "访问方式",
-    dataIndex: "accessMethod",
-    ellipsis: true,
-    tooltip: true,
-    width: 150,
-  },
-  {
-    title: "版本",
-    dataIndex: "version",
-    ellipsis: true,
-    tooltip: true,
-    width: 150,
-  },
-  {
-    title: "管理区域",
-    dataIndex: "managementArea",
-    ellipsis: true,
-    tooltip: true,
-    width: 150,
-  },
-  {
-    title: "备注",
-    dataIndex: "remarks",
-    ellipsis: true,
-    tooltip: true,
-    width: 150,
-  },
-  {
-    title: "操作",
-    dataIndex: "operations",
-    slotName: "operations",
-    width: 120,
-    fixed: "right",
-  },
-]);
+const columns = ref<Column[]>(COLUMNSTEMPLATE);
 
 // 搜索
 const search = () => {
@@ -309,24 +214,6 @@ const handleDialogSubmit = async (formData: Record<string, unknown>) => {
   }
 };
 
-// 提交表单 - 已注释因为未使用
-/*
-const handleSubmit = async () => {
-  try {
-    // 表单验证
-    await formRef.value?.validate()
-
-    // 提交数据
-    await axios.post('/api/eyeconfig/create', dialogForm.value)
-    Message.success('提交成功')
-    dialogVisible.value = false
-    fetchData()
-  } catch (error) {
-    console.error('提交失败', error)
-  }
-}
-*/
-
 // 删除记录
 const deleteRecord = async (record: Record<string, unknown>) => {
   try {
@@ -346,7 +233,6 @@ const {
   handleSelectDensity,
   handleChange,
   popupVisibleChange,
-  // refresh,
 } = useTableOperations(
   () => columns.value,
   () => {}
@@ -361,5 +247,15 @@ const refreshData = () => {
 <style scoped lang="less">
 .container {
   padding: 10px;
+}
+
+.container {
+  padding: 10px;
+}
+:deep(.container .general-card > .arco-card-body) {
+    padding: 10px;
+}
+:deep(.general-card > .arco-card-header) {
+    padding: 10px;
 }
 </style>

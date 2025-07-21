@@ -8,71 +8,72 @@
     @ok="handleSubmit"
     popup-container="#model"
     @update:visible="updateVisible"
-    :width="700"
-    class="eye-config-dialog"
+    modal-class="model-dialog"
   >
     <a-form
       ref="formRef"
       :model="form"
       :disabled="mode === 'view'"
       label-align="right"
-      :label-col-props="{ span: 4 }"
-      :wrapper-col-props="{ span: 19 }"
+      auto-label-width
     >
       <a-form-item
-        field="name"
-        label="名称"
-        :rules="[{ required: true, message: '请输入名称' }]"
+        field="id"
+        label="id"
+        :rules="[{ required: true, message: '请输入id' }]"
       >
-        <a-input v-model="form.name" placeholder="请输入" allow-clear />
+        <a-input v-model="form.id" placeholder="请输入" allow-clear />
       </a-form-item>
-
+     <a-form-item
+        field="title"
+        label="工作类型名称"
+        :rules="[{ required: true, message: '请输入工作类型名称' }]"
+      >
+        <a-input v-model="form.title" placeholder="请输入" allow-clear />
+      </a-form-item>
+     <a-form-item
+        field="sort"
+        label="排序"
+        :rules="[{ required: true, message: '请输入排序' }]"
+      >
+        <a-input v-model="form.sort" placeholder="请输入" allow-clear />
+      </a-form-item>
+     <a-form-item field="status" label="状态" :rules="[{ required: true, message: '请输入状态' }]">
+        <a-select v-model="form.status" allow-clear placeholder="选择状态">
+                      <a-option value="-1">删除</a-option><a-option value="0">禁用</a-option><a-option value="1">启用</a-option>
+        </a-select>
+       </a-form-item>
       <a-form-item
-        field="appId"
-        label="应用ID"
-        :rules="[{ required: true, message: '请输入应用ID' }]"
+        field="create_time"
+        label="创建时间"
+        :rules="[{ required: true, message: '请输入创建时间' }]"
       >
-        <a-input v-model="form.appId" placeholder="请输入" allow-clear />
+        <a-input v-model="form.create_time" placeholder="请输入" allow-clear />
       </a-form-item>
-      <a-form-item
-        field="appsecret"
-        label="应用密钥"
-        :rules="[{ required: true, message: '请输入应用密钥' }]"
+     <a-form-item
+        field="update_time"
+        label="更新时间"
+        :rules="[{ required: true, message: '请输入更新时间' }]"
       >
-        <a-input v-model="form.appsecret" placeholder="请输入" allow-clear />
+        <a-input v-model="form.update_time" placeholder="请输入" allow-clear />
       </a-form-item>
-
-      <a-form-item
-        field="phone"
-        label="手机号"
-        :rules="[{ required: true, message: '请输入手机号' }]"
-      >
-        <a-input v-model="form.phone" placeholder="请输入" allow-clear />
-      </a-form-item>
-
-      <a-form-item
-        field="version"
-        label="版本"
-        :rules="[{ required: true, message: '请输入版本' }]"
-      >
-        <a-input v-model="form.version" placeholder="请输入" allow-clear />
-      </a-form-item>
+      
     </a-form>
 
     <template #footer>
       <div v-if="mode !== 'view'">
         <a-space>
           <a-button @click="handleCancel">
-            '取消'
+            取消
           </a-button>
           <a-button type="primary" @click="handleSubmit">
-            '保存'
+            保存
           </a-button>
         </a-space>
       </div>
       <div v-else>
         <a-button type="primary" @click="handleCancel">
-          '关闭'  
+          关闭
         </a-button>
       </div>
     </template>

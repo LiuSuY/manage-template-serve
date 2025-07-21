@@ -8,71 +8,32 @@
     @ok="handleSubmit"
     popup-container="#model"
     @update:visible="updateVisible"
-    :width="700"
-    class="eye-config-dialog"
+    modal-class="model-dialog"
   >
     <a-form
       ref="formRef"
       :model="form"
       :disabled="mode === 'view'"
       label-align="right"
-      :label-col-props="{ span: 4 }"
-      :wrapper-col-props="{ span: 19 }"
+      auto-label-width
     >
-      <a-form-item
-        field="name"
-        label="名称"
-        :rules="[{ required: true, message: '请输入名称' }]"
-      >
-        <a-input v-model="form.name" placeholder="请输入" allow-clear />
-      </a-form-item>
-
-      <a-form-item
-        field="appId"
-        label="应用ID"
-        :rules="[{ required: true, message: '请输入应用ID' }]"
-      >
-        <a-input v-model="form.appId" placeholder="请输入" allow-clear />
-      </a-form-item>
-      <a-form-item
-        field="appsecret"
-        label="应用密钥"
-        :rules="[{ required: true, message: '请输入应用密钥' }]"
-      >
-        <a-input v-model="form.appsecret" placeholder="请输入" allow-clear />
-      </a-form-item>
-
-      <a-form-item
-        field="phone"
-        label="手机号"
-        :rules="[{ required: true, message: '请输入手机号' }]"
-      >
-        <a-input v-model="form.phone" placeholder="请输入" allow-clear />
-      </a-form-item>
-
-      <a-form-item
-        field="version"
-        label="版本"
-        :rules="[{ required: true, message: '请输入版本' }]"
-      >
-        <a-input v-model="form.version" placeholder="请输入" allow-clear />
-      </a-form-item>
+      DIALOGFORMTEMPLATE 
     </a-form>
 
     <template #footer>
       <div v-if="mode !== 'view'">
         <a-space>
           <a-button @click="handleCancel">
-            '取消'
+            取消
           </a-button>
           <a-button type="primary" @click="handleSubmit">
-            '保存'
+            保存
           </a-button>
         </a-space>
       </div>
       <div v-else>
         <a-button type="primary" @click="handleCancel">
-          '关闭'  
+          关闭
         </a-button>
       </div>
     </template>
