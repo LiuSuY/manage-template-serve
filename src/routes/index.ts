@@ -1,6 +1,7 @@
 import { Router } from "@oak/oak";
 import userRoutes from "./user.ts";
 import crudRoutes from './crud.ts';
+import noteRoutes from './note.ts';
 
 const router = new Router();
 
@@ -19,5 +20,8 @@ router.use(userRoutes.allowedMethods());
 
 router.use(crudRoutes.routes());
 router.use(crudRoutes.allowedMethods());
+
+router.use(noteRoutes.routes());
+router.use(noteRoutes.allowedMethods());
 
 export default router;

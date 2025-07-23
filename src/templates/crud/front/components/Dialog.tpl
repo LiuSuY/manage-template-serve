@@ -76,9 +76,7 @@ const title = computed(() => {
 const formRef = ref();
 
 // 表单数据
-const form = ref({
-  
-});
+const form = ref(DIALOGFORMTEVALUEMPLATE);
 
 // 监听record变化，更新表单数据
 watch(
@@ -106,9 +104,8 @@ watch(
 
 // 重置表单
 const resetForm = () => {
-  form.value = {
-    
-  };
+  // 重置表单
+  formRef.value?.resetFields();
 };
 
 // 更新可见状态

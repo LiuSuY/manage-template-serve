@@ -1,7 +1,7 @@
 <template>
   <div class="container">
-    <BreadCrumb :items="['测试']" />
-    <a-card class="general-card" title="测试">
+    <BreadCrumb :items="['NAMETEMPLATE']" />
+    <a-card class="general-card" title="NAMETEMPLATE">
       <a-grid :cols="48" class="tw:w-full">
         <a-grid-item
           :span="{ xs: 48, sm: 48, md: 48, lg: 42, xl: 42, xxl: 44 }"
@@ -9,95 +9,7 @@
         >
           <a-form auto-label-width layout="horizontal" :model="formModel">
             <a-row :gutter="24">
-              <a-col   
-                :xs="{ span: 24 }"
-                :sm="{ span: 24 }"
-                :md="{ span: 24 }"
-                :lg="{ span: 8 }"
-                :xl="{ span: 6 }"
-                :xxl="{ span: 6 }"
-              >
-                <a-form-item field="id" label="id">
-                  <a-input
-                    v-model="formModel.id"
-                    :placeholder="请输入id"
-                    allow-clear
-                  />
-                </a-form-item>
-              </a-col><a-col   
-                :xs="{ span: 24 }"
-                :sm="{ span: 24 }"
-                :md="{ span: 24 }"
-                :lg="{ span: 8 }"
-                :xl="{ span: 6 }"
-                :xxl="{ span: 6 }"
-              >
-                <a-form-item field="title" label="工作类型名称">
-                  <a-input
-                    v-model="formModel.title"
-                    :placeholder="请输入工作类型名称"
-                    allow-clear
-                  />
-                </a-form-item>
-              </a-col><a-col   
-                :xs="{ span: 24 }"
-                :sm="{ span: 24 }"
-                :md="{ span: 24 }"
-                :lg="{ span: 8 }"
-                :xl="{ span: 6 }"
-                :xxl="{ span: 6 }"
-              >
-                <a-form-item field="sort" label="排序">
-                  <a-input
-                    v-model="formModel.sort"
-                    :placeholder="请输入排序"
-                    allow-clear
-                  />
-                </a-form-item>
-              </a-col><a-col   
-                  :xs="{ span: 24 }"
-                  :sm="{ span: 24 }"
-                  :md="{ span: 24 }"
-                  :lg="{ span: 8 }"
-                  :xl="{ span: 6 }"
-                  :xxl="{ span: 6 }"
-                >
-                  <a-form-item field="status" label="状态" placeholder="选择状态">
-                    <a-select v-model="formModel.status" allow-clear>
-                      <a-option value="-1">删除</a-option><a-option value="0">禁用</a-option><a-option value="1">启用</a-option>
-                    </a-select>
-                  </a-form-item>
-                </a-col><a-col   
-                :xs="{ span: 24 }"
-                :sm="{ span: 24 }"
-                :md="{ span: 24 }"
-                :lg="{ span: 8 }"
-                :xl="{ span: 6 }"
-                :xxl="{ span: 6 }"
-              >
-                <a-form-item field="create_time" label="创建时间">
-                  <a-input
-                    v-model="formModel.create_time"
-                    :placeholder="请输入创建时间"
-                    allow-clear
-                  />
-                </a-form-item>
-              </a-col><a-col   
-                :xs="{ span: 24 }"
-                :sm="{ span: 24 }"
-                :md="{ span: 24 }"
-                :lg="{ span: 8 }"
-                :xl="{ span: 6 }"
-                :xxl="{ span: 6 }"
-              >
-                <a-form-item field="update_time" label="更新时间">
-                  <a-input
-                    v-model="formModel.update_time"
-                    :placeholder="请输入更新时间"
-                    allow-clear
-                  />
-                </a-form-item>
-              </a-col>
+              FORMTEMPLATE
             </a-row>
           </a-form>
         </a-grid-item>
@@ -205,15 +117,19 @@ import { useI18n } from "vue-i18n";
 import type { TableColumnData } from "@arco-design/web-vue/es/table/interface";
 import { useTable } from "@/hooks/useTable";
 import { useTableOperations } from "@/hooks/useTableOperations";
-import axios from "axios";
+
 import Dialog from "./components/Dialog.vue";
 
 type Column = TableColumnData & { checked?: boolean };
 
 // 生成表单模型
 const generateFormModel = () => {
-  return {};
+  return FORMEMODELTEMPLATE;
 };
+
+RECORDS_TEMPLATE
+
+PARAMS_TEMPLATE
 
 const { t } = useI18n();
 const formModel = ref(generateFormModel());
@@ -232,7 +148,7 @@ const initDialogForm = () => {
 
 // 获取数据
 const fetchDataFn = async (params: any) => {
-  return axios.post(`/api/eyeconfig/list`, { params });
+  return alovaInstance.Get(`/inter/API_NAME/list`, { params });
 };
 
 const {
@@ -244,10 +160,10 @@ const {
   onPageChange,
   search: searchData,
   reset: resetData,
-} = useTable<any, any>(fetchDataFn, { current: 1, pageSize: 10 });
+} = useTable<IRECORD, IPARAMS>(fetchDataFn, { current: 1, pageSize: 10 });
 
 // 定义表格列
-const columns = ref<Column[]>([{"title":"id","dataIndex":"id","key":"id","ellipsis":true,"tooltip":true,"width":150},{"title":"工作类型名称","dataIndex":"title","key":"title","ellipsis":true,"tooltip":true,"width":150},{"title":"排序","dataIndex":"sort","key":"sort","ellipsis":true,"tooltip":true,"width":150},{"title":"状态","dataIndex":"status","key":"status","ellipsis":true,"tooltip":true,"width":150},{"title":"创建时间","dataIndex":"create_time","key":"create_time","ellipsis":true,"tooltip":true,"width":150},{"title":"更新时间","dataIndex":"update_time","key":"update_time","ellipsis":true,"tooltip":true,"width":150},{"title":"操作","dataIndex":"operations","slotName":"operations","width":120,"fixed":"right"}]);
+const columns = ref<Column[]>(COLUMNSTEMPLATE);
 
 // 搜索
 const search = () => {
@@ -292,9 +208,9 @@ const handleDialogSubmit = async (formData: Record<string, unknown>) => {
   try {
     const api =
       dialogMode.value === "create"
-        ? "/api/eyeconfig/create"
-        : "/api/eyeconfig/update";
-    await axios.post(api, formData);
+        ? "/inter/API_NAME/create"
+        : "/inter/API_NAME/update";
+    await alovaInstance.Post(api, formData);
     closeDialog();
     refreshData();
   } catch (error) {
@@ -305,7 +221,7 @@ const handleDialogSubmit = async (formData: Record<string, unknown>) => {
 // 删除记录
 const deleteRecord = async (record: Record<string, unknown>) => {
   try {
-    await axios.post("/api/eyeconfig/delete", { id: record.id });
+    await alovaInstance.Post("/inter/API_NAME/delete", { id: record.id });
     refreshData();
   } catch (error) {
     console.error("删除失败", error);
