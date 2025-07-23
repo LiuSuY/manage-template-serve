@@ -77,7 +77,7 @@ export class NoteService {
     return this.getNoteById(id);
   }
   
-  static async deleteNote(id: number): Promise<boolean> {
+  static async deleteNote(id: string): Promise<boolean> {
     const sql = "DELETE FROM oa_note WHERE id = ?";
     const result = await query(sql, [id]) as any;
     return result.affectedRows > 0;

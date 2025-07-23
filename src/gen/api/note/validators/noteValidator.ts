@@ -2,21 +2,9 @@ import { z } from "zod";
 
 export const createNoteSchema = z.object({
 
-
-
-
-
-
-
-
-
-
-
-
-
 });
 
-export const updateNoteSchema = z.object({
+export const updateNoteSchema = z.object({})
 
 
 

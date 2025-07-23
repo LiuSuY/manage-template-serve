@@ -35,7 +35,7 @@ export function validateBody<T>(schema: ZodSchema<T>) {
   };
 }
 
-export function validateQuery<T>(schema: ZodSchema<T>) {
+export function validateQuery<T>(schema?: ZodSchema<T>) {
   // 如果没有传入则不检查
   if (!schema) {
     return async (ctx: Context, next: Next) => {

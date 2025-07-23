@@ -24,14 +24,17 @@ router.get("/:id",
 );
 
 // 更新note
-router.put("/:id",
+router.put("/update",
   validateBody(updateNoteSchema),
   noteController.updateNote
 );
 
 // 删除note
-router.delete("/:id",
-  validateQuery(),
+router.delete("/delete/:id",
+  async (ctx, next) => {
+    
+    await next();
+  },
   noteController.deleteNote
 );
 

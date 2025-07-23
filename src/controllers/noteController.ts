@@ -86,7 +86,7 @@ export async function updateNote(ctx: Context) {
 
 export async function deleteNote(ctx: Context) {
   try {
-    const id = Number(ctx.params.id);
+    const id = ctx.params.id;
     const result = await NoteService.deleteNote(id);
     
     ctx.response.status = 200;
