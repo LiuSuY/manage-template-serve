@@ -114,13 +114,13 @@ export class TemplateEngine {
     // 开始接口定义
     const lines = [`interface I${interfaceName} {`];
 
-    // 为每个字段生成一行，搜索参数通常是可选的
-    fields.forEach((field) => {
-      // 排除一些不适合作为搜索参数的字段
-      if (!["id", "createTime", "updateTime"].includes(field.COLUMN_NAME)) {
-        lines.push(`  ${field.COLUMN_NAME}?: string;`);
-      }
-    });
+    // // 为每个字段生成一行，搜索参数通常是可选的
+    // fields.forEach((field) => {
+    //   // 排除一些不适合作为搜索参数的字段
+    //   if (!["createTime", "updateTime"].includes(field.COLUMN_NAME)) {
+    //     lines.push(`  ${field.COLUMN_NAME}?: string;`);
+    //   }
+    // });
 
     // 添加分页参数
     lines.push("  current: number;");
@@ -195,15 +195,16 @@ export class TemplateEngine {
   }
 
   private static generateSelectOptions(field: FieldInfo) {
-    const comment = field?.COLUMN_COMMENT;
+    const comment = field.COLUMN_COMMENT;
     if (comment) {
       // 使用正则表达式同时匹配中英文冒号
       const match = comment.split(/[：:]/)[1];
       if (match) {
         return this.convertArray([match]).map((item) => {
-          return `<a-option value="${item[0]}">${item[1]}</a-option>`;
+          return `<a-option :value="${item[0]}">${item[1]}</a-option>`;
         });
       }
+      return `<a-option value="-10">自定</a-option>`;
     }
   }
   private static convertArray(input: string[]): string[][] {
@@ -221,8 +222,8 @@ export class TemplateEngine {
   }
 
   private static genSelectName = (field: FieldInfo) => {
-    if (field?.DATA_TYPE === "tinyint") {
-      const comment = field?.COLUMN_COMMENT;
+    if (field.COLUMN_COMMENT && /[：:].*\d/.test(field.COLUMN_COMMENT)) {
+      const comment = field.COLUMN_COMMENT;
       if (comment) {
         // 使用正则表达式同时匹配中英文冒号
         const match = comment.split(/[：:]/)[0];
@@ -230,7 +231,7 @@ export class TemplateEngine {
           return match;
         }
       }
-      return "状态";
+      return field.COLUMN_NAME;
     }
     if (field?.COLUMN_COMMENT) {
       return field?.COLUMN_COMMENT;
@@ -258,7 +259,8 @@ export class TemplateEngine {
   //生成对话框表单代码
   private static generateDialogFormCode(fields: Array<FieldInfo>): string[] {
     return fields.map((field: FieldInfo) => {
-      if (field.DATA_TYPE === "tinyint") {
+      // 使用正则表达式判断注释是否包含中英文冒号和数字（表示有选项配置）
+      if (field.COLUMN_COMMENT && /[：:].*\d/.test(field.COLUMN_COMMENT)) {
         return `<a-form-item field="${
           field.COLUMN_NAME
         }" label="${this.genSelectName(
@@ -293,7 +295,8 @@ export class TemplateEngine {
   // 生成搜索框表单代码
   private static generateSearchFormCode(fields: Array<FieldInfo>): string[] {
     return fields.map((field: FieldInfo) => {
-      if (field.DATA_TYPE === "tinyint") {
+      // 使用正则表达式判断注释是否包含中英文冒号和数字（表示有选项配置）
+      if (field.COLUMN_COMMENT && /[：:].*\d/.test(field.COLUMN_COMMENT)) {
         return `<a-col   
                   :xs="{ span: 24 }"
                   :sm="{ span: 24 }"
@@ -315,6 +318,27 @@ export class TemplateEngine {
                   </a-form-item>
                 </a-col>`;
       }
+      if (field.COLUMN_NAME.includes("_time")) {
+       return `<a-col   
+                :xs="{ span: 24 }"
+                :sm="{ span: 24 }"
+                :md="{ span: 24 }"
+                :lg="{ span: 8 }"
+                :xl="{ span: 6 }"
+                :xxl="{ span: 6 }"
+              >
+                <a-form-item field="${field.COLUMN_NAME}" label="${
+          field.COLUMN_COMMENT == "" ? field.COLUMN_NAME : field.COLUMN_COMMENT
+        }">
+                  <a-date-picker
+                    style="width: 100%"
+                    v-model="formModel.${field.COLUMN_NAME}"
+                    placeholder="请输入${field.COLUMN_COMMENT}"
+                    allow-clear
+                  />
+                </a-form-item>
+              </a-col>`;
+      }
       // 这里可以根据字段类型生成不同的表单项
       return `<a-col   
                 :xs="{ span: 24 }"
@@ -325,13 +349,11 @@ export class TemplateEngine {
                 :xxl="{ span: 6 }"
               >
                 <a-form-item field="${field.COLUMN_NAME}" label="${
-        field.COLUMN_COMMENT || field.COLUMN_NAME
+        field.COLUMN_COMMENT == "" ? field.COLUMN_NAME : field.COLUMN_COMMENT
       }">
                   <a-input
                     v-model="formModel.${field.COLUMN_NAME}"
-                    placeholder="请输入${
-                      field.COLUMN_COMMENT || field.COLUMN_NAME
-                    }"
+                    placeholder="请输入${field.COLUMN_COMMENT}"
                     allow-clear
                   />
                 </a-form-item>
@@ -358,10 +380,10 @@ export class TemplateEngine {
   ): Promise<string> {
     const { module } = userData;
     const capitalizedModule = module.charAt(0).toUpperCase() + module.slice(1);
-    
+
     const templatePath = `${Deno.cwd()}/src/templates/crud/back/controller.tpl`;
     const template = await this.readTemplate(templatePath);
-    
+
     // 替换模板中的变量
     return template
       .replaceAll("${capitalizedModule}", capitalizedModule)
@@ -391,9 +413,25 @@ export class TemplateEngine {
       .map((f) => `userData.${f.COLUMN_NAME}`)
       .join(",\n      ");
 
+    // 生成搜索字段（通常是文本类型的字段）
+    const searchableFields = fields.filter(
+      (f) =>
+        ["varchar", "text", "longtext", "char"].includes(f.DATA_TYPE) &&
+        !["id", "created_at", "updated_at", "delete_time"].includes(
+          f.COLUMN_NAME
+        )
+    );
+
+    const searchFields =
+      searchableFields.length > 0
+        ? searchableFields.map((f) => `${f.COLUMN_NAME} LIKE ?`).join(" OR ")
+        : "id = id"; // 默认条件，避免空字符串
+
+    const searchFieldsCount = searchableFields.length;
+
     const templatePath = `${Deno.cwd()}/src/templates/crud/back/service.tpl`;
     const template = await this.readTemplate(templatePath);
-    
+
     // 替换模板中的变量
     return template
       .replaceAll("${capitalizedModule}", capitalizedModule)
@@ -403,7 +441,9 @@ export class TemplateEngine {
       .replaceAll("${insertFields}", insertFields)
       .replaceAll("${insertPlaceholders}", insertPlaceholders)
       .replaceAll("${insertParams}", insertParams)
-      .replaceAll("${search}", "search"); // 处理模板中的 ${search} 变量
+      .replaceAll("${searchFields}", searchFields)
+      .replaceAll("${searchFieldsCount}", searchFieldsCount.toString())
+      .replaceAll("${search}", "search");
   }
 
   // 生成Type文件
@@ -417,13 +457,14 @@ export class TemplateEngine {
     // 生成基础接口
     const baseInterface = this.generateInterfaceRecordCode(module, fields);
 
-    // 生成创建数据接口（排除id和时间戳字段）
-    const createFields = fields.filter(
-      (f) => !["id", "created_at", "updated_at"].includes(f.COLUMN_NAME)
-    );
+    // // 生成创建数据接口（排除id和时间戳字段）
+    // const createFields = fields.filter(
+    //   (f) => !["id", "created_at", "updated_at"].includes(f.COLUMN_NAME)
+    // );
+
     const createInterface = this.generateInterfaceRecordCode(
       module + "Create",
-      createFields
+      fields
     ).replace(module + "CreateRecord", `Create${capitalizedModule}Data`);
 
     // 生成更新数据接口（所有字段都是可选的，排除id）
@@ -447,7 +488,7 @@ export class TemplateEngine {
 
     const templatePath = `${Deno.cwd()}/src/templates/crud/back/type.tpl`;
     const template = await this.readTemplate(templatePath);
-    
+
     // 替换模板中的变量
     return template
       .replaceAll("${capitalizedModule}", capitalizedModule)
@@ -465,33 +506,143 @@ export class TemplateEngine {
     const capitalizedModule = module.charAt(0).toUpperCase() + module.slice(1);
 
     // 生成创建验证schema
-    const createFields = fields.filter(
-      (f) => !["id", "created_at", "updated_at"].includes(f.COLUMN_NAME)
-    );
-    const createValidation = createFields
+    const createValidation = fields
       .map((field) => {
-        // 现有的验证逻辑
-        // ...
+        return this.generateFieldValidation(field, false);
       })
-      .join("\n");
+      .join(",\n");
 
     // 生成更新验证schema
-    const updateFields = fields.filter((f) => f.COLUMN_NAME !== "id");
-    const updateValidation = updateFields
+    const updateValidation = fields
       .map((field) => {
-        // 现有的验证逻辑
-        // ...
+        const isUpdate = field.COLUMN_NAME !== "id";
+        return this.generateFieldValidation(field, isUpdate);
       })
-      .join("\n");
+      .join(",\n");
+
+    // 生成删除验证schema
+    const deleteValidation = '  id: z.number().int().min(1, "ID必须大于0")';
+
+    // 生成列表查询验证schema
+    const listValidation = `  current: z.number().int().min(1).optional().default(1),
+  pageSize: z.number().int().min(1).max(100).optional().default(10)`;
 
     const templatePath = `${Deno.cwd()}/src/templates/crud/back/validator.tpl`;
     const template = await this.readTemplate(templatePath);
-    
-    // 替换模板中的变量
+
     return template
       .replaceAll("${capitalizedModule}", capitalizedModule)
       .replaceAll("${createValidation}", createValidation)
-      .replaceAll("${updateValidation}", updateValidation);
+      .replaceAll("${updateValidation}", updateValidation)
+      .replaceAll("${deleteValidation}", deleteValidation)
+      .replaceAll("${listValidation}", listValidation);
+  }
+
+  // 生成字段验证规则
+  private static generateFieldValidation(
+    field: FieldInfo,
+    isUpdate: boolean
+  ): string {
+    const {
+      COLUMN_NAME,
+      DATA_TYPE,
+      IS_NULLABLE,
+      CHARACTER_MAXIMUM_LENGTH,
+      COLUMN_COMMENT,
+    } = field;
+    const fieldName = COLUMN_NAME;
+    const isOptional = IS_NULLABLE === "YES" || isUpdate;
+    const comment = COLUMN_COMMENT || fieldName;
+
+    let validation = "";
+
+    // 根据数据类型生成基础验证
+    switch (DATA_TYPE) {
+      case "varchar":
+      case "text":
+      case "longtext":
+      case "char":
+        validation = "z.string()";
+        if (!isOptional) {
+          validation += `.min(1, "${comment}不能为空")`;
+        }
+        if (CHARACTER_MAXIMUM_LENGTH) {
+          validation += `.max(${CHARACTER_MAXIMUM_LENGTH}, "${comment}长度不能超过${CHARACTER_MAXIMUM_LENGTH}个字符")`;
+        }
+        break;
+
+      case "int":
+      case "bigint":
+      case "tinyint":
+        if (DATA_TYPE === "tinyint" && COLUMN_COMMENT?.includes(":")) {
+          // tinyint 类型且有选项说明，生成枚举验证
+          const options = this.extractOptionsFromComment(COLUMN_COMMENT);
+          if (options.length > 0) {
+            const enumValues = options.map((opt) => opt[0]).join(", ");
+            // 使用 z.number().refine() 而不是 z.enum()
+            validation = `z.number().int().refine(val => [${enumValues}].includes(val), { message: "请选择有效的${comment}" })`;
+          } else {
+            validation = "z.number().int()";
+          }
+        } else {
+          validation = "z.number().int()";
+          if (!isOptional) {
+            validation += `.min(1, "${comment}必须大于0")`;
+          }
+        }
+        break;
+
+      case "decimal":
+      case "float":
+      case "double":
+        validation = "z.number()";
+        if (!isOptional) {
+          validation += `.min(0, "${comment}不能为负数")`;
+        }
+        break;
+
+      case "datetime":
+      case "timestamp":
+        validation = "z.string().datetime()";
+        break;
+
+      case "date":
+        validation =
+          'z.string().regex(/^\\d{4}-\\d{2}-\\d{2}$/, "请输入有效的日期格式(YYYY-MM-DD)")';
+        break;
+
+      case "boolean":
+      case "bit":
+        validation = "z.boolean()";
+        break;
+
+      default:
+        validation = "z.string()";
+        if (!isOptional) {
+          validation += `.min(1, "${comment}不能为空")`;
+        }
+    }
+
+    // 添加可选标记
+    if (isOptional) {
+      validation += ".optional()";
+    }
+
+    return `  ${fieldName}: ${validation}`;
+  }
+
+  // 从注释中提取选项
+  private static extractOptionsFromComment(comment: string): string[][] {
+    if (!comment || !comment.includes(":")) {
+      return [];
+    }
+
+    const optionsPart = comment.split(/[：:]/)[1];
+    if (!optionsPart) {
+      return [];
+    }
+
+    return this.convertArray([optionsPart]);
   }
 
   // 生成Router文件
@@ -504,7 +655,7 @@ export class TemplateEngine {
 
     const templatePath = `${Deno.cwd()}/src/templates/crud/back/router.tpl`;
     const template = await this.readTemplate(templatePath);
-    
+
     // 替换模板中的变量
     return template
       .replaceAll("${capitalizedModule}", capitalizedModule)

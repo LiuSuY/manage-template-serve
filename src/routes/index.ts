@@ -3,6 +3,7 @@ import userRoutes from "./user.ts";
 import crudRoutes from './crud.ts';
 import noteRoutes from './note.ts';
 
+
 const router = new Router();
 
 // 健康检查
@@ -20,6 +21,7 @@ router.use(userRoutes.allowedMethods());
 
 router.use(crudRoutes.routes());
 router.use(crudRoutes.allowedMethods());
+
 
 router.use(noteRoutes.routes());
 router.use(noteRoutes.allowedMethods());

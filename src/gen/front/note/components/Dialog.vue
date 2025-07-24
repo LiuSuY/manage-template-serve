@@ -52,23 +52,21 @@
       >
         <a-input v-model="form.src" placeholder="请输入" allow-clear />
       </a-form-item>
-     <a-form-item
-        field="status"
-        label="状态:1可用-1禁用"
-        :rules="[{ required: true, message: '请输入状态:1可用-1禁用' }]"
-      >
-        <a-input v-model="form.status" placeholder="请输入" allow-clear />
-      </a-form-item>
-     <a-form-item
+     <a-form-item field="status" label="状态" :rules="[{ required: true, message: '请输入状态' }]">
+        <a-select v-model="form.status" allow-clear placeholder="选择状态">
+                      <a-option :value="1">可用</a-option><a-option :value="0">禁用</a-option>
+        </a-select>
+       </a-form-item>
+      <a-form-item
         field="file_ids"
         label="相关附件"
         :rules="[{ required: true, message: '请输入相关附件' }]"
       >
         <a-input v-model="form.file_ids" placeholder="请输入" allow-clear />
       </a-form-item>
-     <a-form-item field="role_type" label="状态" :rules="[{ required: true, message: '请输入状态' }]">
-        <a-select v-model="form.role_type" allow-clear placeholder="选择状态">
-                      undefined
+     <a-form-item field="role_type" label="查看权限" :rules="[{ required: true, message: '请输入查看权限' }]">
+        <a-select v-model="form.role_type" allow-clear placeholder="选择查看权限">
+                      <a-option :value="0">所有人</a-option><a-option :value="1">部门</a-option><a-option :value="2">人员</a-option>
         </a-select>
        </a-form-item>
       <a-form-item
@@ -105,6 +103,20 @@
         :rules="[{ required: true, message: '请输入发布人id' }]"
       >
         <a-input v-model="form.admin_id" placeholder="请输入" allow-clear />
+      </a-form-item>
+     <a-form-item
+        field="create_time"
+        label="create_time"
+        :rules="[{ required: true, message: '请输入create_time' }]"
+      >
+        <a-input v-model="form.create_time" placeholder="请输入" allow-clear />
+      </a-form-item>
+     <a-form-item
+        field="update_time"
+        label="update_time"
+        :rules="[{ required: true, message: '请输入update_time' }]"
+      >
+        <a-input v-model="form.update_time" placeholder="请输入" allow-clear />
       </a-form-item>
      <a-form-item
         field="delete_time"
@@ -185,6 +197,8 @@ const form = ref({  id: "",
   start_time: "",
   end_time: "",
   admin_id: "",
+  create_time: "",
+  update_time: "",
   delete_time: "",
 });
 

@@ -12,10 +12,13 @@ interface INoteRecord {
   start_time: number;
   end_time: number;
   admin_id: number;
+  create_time: number;
+  update_time: number;
   delete_time: number;
 }
 
 interface INoteCreateRecord {
+  id: number;
   cate_id: number;
   title: string;
   content: string;
@@ -28,6 +31,8 @@ interface INoteCreateRecord {
   start_time: number;
   end_time: number;
   admin_id: number;
+  create_time: number;
+  update_time: number;
   delete_time: number;
 }
 
@@ -44,5 +49,7 @@ export interface UpdateNoteData {
   start_time?: number;
   end_time?: number;
   admin_id?: number;
+  create_time?: number;
+  update_time?: number;
   delete_time?: number;
 }

@@ -20,7 +20,7 @@
                 <a-form-item field="id" label="id">
                   <a-input
                     v-model="formModel.id"
-                    placeholder="请输入id"
+                    placeholder="请输入"
                     allow-clear
                   />
                 </a-form-item>
@@ -85,21 +85,19 @@
                   />
                 </a-form-item>
               </a-col><a-col   
-                :xs="{ span: 24 }"
-                :sm="{ span: 24 }"
-                :md="{ span: 24 }"
-                :lg="{ span: 8 }"
-                :xl="{ span: 6 }"
-                :xxl="{ span: 6 }"
-              >
-                <a-form-item field="status" label="状态:1可用-1禁用">
-                  <a-input
-                    v-model="formModel.status"
-                    placeholder="请输入状态:1可用-1禁用"
-                    allow-clear
-                  />
-                </a-form-item>
-              </a-col><a-col   
+                  :xs="{ span: 24 }"
+                  :sm="{ span: 24 }"
+                  :md="{ span: 24 }"
+                  :lg="{ span: 8 }"
+                  :xl="{ span: 6 }"
+                  :xxl="{ span: 6 }"
+                >
+                  <a-form-item field="status" label="状态" placeholder="选择状态">
+                    <a-select v-model="formModel.status" allow-clear>
+                      <a-option :value="1">可用</a-option><a-option :value="0">禁用</a-option>
+                    </a-select>
+                  </a-form-item>
+                </a-col><a-col   
                 :xs="{ span: 24 }"
                 :sm="{ span: 24 }"
                 :md="{ span: 24 }"
@@ -122,9 +120,9 @@
                   :xl="{ span: 6 }"
                   :xxl="{ span: 6 }"
                 >
-                  <a-form-item field="role_type" label="状态" placeholder="选择状态">
+                  <a-form-item field="role_type" label="查看权限" placeholder="选择查看权限">
                     <a-select v-model="formModel.role_type" allow-clear>
-                      undefined
+                      <a-option :value="0">所有人</a-option><a-option :value="1">部门</a-option><a-option :value="2">人员</a-option>
                     </a-select>
                   </a-form-item>
                 </a-col><a-col   
@@ -166,7 +164,8 @@
                 :xxl="{ span: 6 }"
               >
                 <a-form-item field="start_time" label="展示开始时间">
-                  <a-input
+                  <a-date-picker
+                    style="width: 100%"
                     v-model="formModel.start_time"
                     placeholder="请输入展示开始时间"
                     allow-clear
@@ -181,7 +180,8 @@
                 :xxl="{ span: 6 }"
               >
                 <a-form-item field="end_time" label="展示结束时间">
-                  <a-input
+                  <a-date-picker
+                    style="width: 100%"
                     v-model="formModel.end_time"
                     placeholder="请输入展示结束时间"
                     allow-clear
@@ -210,8 +210,41 @@
                 :xl="{ span: 6 }"
                 :xxl="{ span: 6 }"
               >
+                <a-form-item field="create_time" label="create_time">
+                  <a-date-picker
+                    style="width: 100%"
+                    v-model="formModel.create_time"
+                    placeholder="请输入"
+                    allow-clear
+                  />
+                </a-form-item>
+              </a-col><a-col   
+                :xs="{ span: 24 }"
+                :sm="{ span: 24 }"
+                :md="{ span: 24 }"
+                :lg="{ span: 8 }"
+                :xl="{ span: 6 }"
+                :xxl="{ span: 6 }"
+              >
+                <a-form-item field="update_time" label="update_time">
+                  <a-date-picker
+                    style="width: 100%"
+                    v-model="formModel.update_time"
+                    placeholder="请输入"
+                    allow-clear
+                  />
+                </a-form-item>
+              </a-col><a-col   
+                :xs="{ span: 24 }"
+                :sm="{ span: 24 }"
+                :md="{ span: 24 }"
+                :lg="{ span: 8 }"
+                :xl="{ span: 6 }"
+                :xxl="{ span: 6 }"
+              >
                 <a-form-item field="delete_time" label="删除时间">
-                  <a-input
+                  <a-date-picker
+                    style="width: 100%"
                     v-model="formModel.delete_time"
                     placeholder="请输入删除时间"
                     allow-clear
@@ -345,6 +378,8 @@ const generateFormModel = () => {
   start_time: "",
   end_time: "",
   admin_id: "",
+  create_time: "",
+  update_time: "",
   delete_time: "",
 };
 };
@@ -363,23 +398,12 @@ interface INoteRecord {
   start_time: number;
   end_time: number;
   admin_id: number;
+  create_time: number;
+  update_time: number;
   delete_time: number;
 }
 
 interface INoteParams {
-  cate_id?: string;
-  title?: string;
-  content?: string;
-  src?: string;
-  status?: string;
-  file_ids?: string;
-  role_type?: string;
-  role_dids?: string;
-  role_uids?: string;
-  start_time?: string;
-  end_time?: string;
-  admin_id?: string;
-  delete_time?: string;
   current: number;
   pageSize: number;
   [key: string]: unknown;
@@ -401,8 +425,8 @@ const initDialogForm = () => {
 };
 
 // 获取数据
-const fetchDataFn = async (params: any) => {
-  return alovaInstance.Get(`/inter/note/list`, { params });
+const fetchDataFn = async (params: INoteParams) => {
+  return alovaInstance.Post(`/inter/note/list`, { params });
 };
 
 const {
@@ -414,10 +438,10 @@ const {
   onPageChange,
   search: searchData,
   reset: resetData,
-} = useTable<INoteRecord, INoteParams>(fetchDataFn, { current: 1, pageSize: 10 });
+} = useTable<INoteRecord, IPARAMS>(fetchDataFn, { current: 1, pageSize: 10 });
 
 // 定义表格列
-const columns = ref<Column[]>([{"title":"id","dataIndex":"id","key":"id","ellipsis":true,"tooltip":true,"width":150},{"title":"公告分类ID","dataIndex":"cate_id","key":"cate_id","ellipsis":true,"tooltip":true,"width":150},{"title":"标题","dataIndex":"title","key":"title","ellipsis":true,"tooltip":true,"width":150},{"title":"公告内容","dataIndex":"content","key":"content","ellipsis":true,"tooltip":true,"width":150},{"title":"关联链接","dataIndex":"src","key":"src","ellipsis":true,"tooltip":true,"width":150},{"title":"状态:1可用-1禁用","dataIndex":"status","key":"status","ellipsis":true,"tooltip":true,"width":150},{"title":"相关附件","dataIndex":"file_ids","key":"file_ids","ellipsis":true,"tooltip":true,"width":150},{"title":"状态","dataIndex":"role_type","key":"role_type","ellipsis":true,"tooltip":true,"width":150},{"title":"可查看部门","dataIndex":"role_dids","key":"role_dids","ellipsis":true,"tooltip":true,"width":150},{"title":"可查看用户","dataIndex":"role_uids","key":"role_uids","ellipsis":true,"tooltip":true,"width":150},{"title":"展示开始时间","dataIndex":"start_time","key":"start_time","ellipsis":true,"tooltip":true,"width":150},{"title":"展示结束时间","dataIndex":"end_time","key":"end_time","ellipsis":true,"tooltip":true,"width":150},{"title":"发布人id","dataIndex":"admin_id","key":"admin_id","ellipsis":true,"tooltip":true,"width":150},{"title":"删除时间","dataIndex":"delete_time","key":"delete_time","ellipsis":true,"tooltip":true,"width":150},{"title":"操作","dataIndex":"operations","slotName":"operations","width":120,"fixed":"right"}]);
+const columns = ref<Column[]>([{"title":"id","dataIndex":"id","key":"id","ellipsis":true,"tooltip":true,"width":150},{"title":"公告分类ID","dataIndex":"cate_id","key":"cate_id","ellipsis":true,"tooltip":true,"width":150},{"title":"标题","dataIndex":"title","key":"title","ellipsis":true,"tooltip":true,"width":150},{"title":"公告内容","dataIndex":"content","key":"content","ellipsis":true,"tooltip":true,"width":150},{"title":"关联链接","dataIndex":"src","key":"src","ellipsis":true,"tooltip":true,"width":150},{"title":"状态","dataIndex":"status","key":"status","ellipsis":true,"tooltip":true,"width":150},{"title":"相关附件","dataIndex":"file_ids","key":"file_ids","ellipsis":true,"tooltip":true,"width":150},{"title":"查看权限","dataIndex":"role_type","key":"role_type","ellipsis":true,"tooltip":true,"width":150},{"title":"可查看部门","dataIndex":"role_dids","key":"role_dids","ellipsis":true,"tooltip":true,"width":150},{"title":"可查看用户","dataIndex":"role_uids","key":"role_uids","ellipsis":true,"tooltip":true,"width":150},{"title":"展示开始时间","dataIndex":"start_time","key":"start_time","ellipsis":true,"tooltip":true,"width":150},{"title":"展示结束时间","dataIndex":"end_time","key":"end_time","ellipsis":true,"tooltip":true,"width":150},{"title":"发布人id","dataIndex":"admin_id","key":"admin_id","ellipsis":true,"tooltip":true,"width":150},{"title":"create_time","dataIndex":"create_time","key":"create_time","ellipsis":true,"tooltip":true,"width":150},{"title":"update_time","dataIndex":"update_time","key":"update_time","ellipsis":true,"tooltip":true,"width":150},{"title":"删除时间","dataIndex":"delete_time","key":"delete_time","ellipsis":true,"tooltip":true,"width":150},{"title":"操作","dataIndex":"operations","slotName":"operations","width":120,"fixed":"right"}]);
 
 // 搜索
 const search = () => {
@@ -439,14 +463,14 @@ const openCreateDialog = () => {
 };
 
 // 查看详情
-const viewDetail = (record: any) => {
+const viewDetail = (record: IRECORD) => {
   dialogMode.value = "view";
   Object.assign(dialogForm.value, record);
   dialogVisible.value = true;
 };
 
 // 编辑记录
-const editRecord = (record: any) => {
+const editRecord = (record: IRECORD) => {
   dialogMode.value = "edit";
   Object.assign(dialogForm.value, record);
   dialogVisible.value = true;

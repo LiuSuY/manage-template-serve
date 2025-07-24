@@ -1,19 +1,19 @@
 import { Router } from "@oak/oak";
 import { validateBody, validateQuery } from "../middleware/validation.ts";
-import { create${capitalizedModule}Schema, update${capitalizedModule}Schema } from "../validators/${module}Validator.ts";
+import { create${capitalizedModule}Schema, update${capitalizedModule}Schema, delete${capitalizedModule}Schema, list${capitalizedModule}Schema } from "../validators/${module}Validator.ts";
 import * as ${module}Controller from "../controllers/${module}Controller.ts";
 
 const router = new Router({ prefix: "/api/${module}" });
 
 // 创建${module}
-router.post("/", 
+router.post("/create", 
   validateBody(create${capitalizedModule}Schema),
   ${module}Controller.create${capitalizedModule}
 );
 
-// 获取${module}列表
-router.get("/list",
-  validateQuery(),
+// 获取${module}列表 - 改为POST请求支持复杂查询
+router.post("/list",
+  validateBody(list${capitalizedModule}Schema),
   ${module}Controller.get${capitalizedModule}List
 );
 
@@ -24,14 +24,14 @@ router.get("/:id",
 );
 
 // 更新${module}
-router.put("/:id",
+router.put("/update",
   validateBody(update${capitalizedModule}Schema),
   ${module}Controller.update${capitalizedModule}
 );
 
 // 删除${module}
-router.delete("/:id",
-  validateQuery(),
+router.delete("/delete/:id",
+  validateQuery(delete${capitalizedModule}Schema),
   ${module}Controller.delete${capitalizedModule}
 );
 

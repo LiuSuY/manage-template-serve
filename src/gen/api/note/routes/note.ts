@@ -1,19 +1,19 @@
 import { Router } from "@oak/oak";
 import { validateBody, validateQuery } from "../middleware/validation.ts";
-import { createNoteSchema, updateNoteSchema } from "../validators/noteValidator.ts";
+import { createNoteSchema, updateNoteSchema, deleteNoteSchema, listNoteSchema } from "../validators/noteValidator.ts";
 import * as noteController from "../controllers/noteController.ts";
 
 const router = new Router({ prefix: "/api/note" });
 
 // 创建note
-router.post("/", 
+router.post("/create", 
   validateBody(createNoteSchema),
   noteController.createNote
 );
 
-// 获取note列表
-router.get("/list",
-  validateQuery(),
+// 获取note列表 - 改为POST请求支持复杂查询
+router.post("/list",
+  validateBody(listNoteSchema),
   noteController.getNoteList
 );
 
@@ -30,10 +30,8 @@ router.put("/update",
 );
 
 // 删除note
-router.delete("/delete",
-  validateBody({
-    id: { type: "number" }
-  }),
+router.delete("/delete/:id",
+  validateQuery(deleteNoteSchema),
   noteController.deleteNote
 );
 

@@ -10,7 +10,7 @@ export async function create${capitalizedModule}(ctx: Context) {
     ctx.response.status = 200;
     ctx.response.body = {
       success: true,
-      message: "创建成功",
+      msg: "创建成功",
       code: 0,
       data: result
     };
@@ -50,7 +50,7 @@ export async function get${capitalizedModule}ById(ctx: Context) {
         success: false,
         code: -1,
         data: "",
-        message: "记录不存在"
+        msg: "记录不存在"
       };
       return;
     }
@@ -68,14 +68,13 @@ export async function get${capitalizedModule}ById(ctx: Context) {
 
 export async function update${capitalizedModule}(ctx: Context) {
   try {
-    const id = Number(ctx.params.id);
     const data: Update${capitalizedModule} = ctx.state.validatedBody;
-    const result = await ${capitalizedModule}Service.update${capitalizedModule}(id, data);
+    const result = await ${capitalizedModule}Service.update${capitalizedModule}(data.id, data);
     
     ctx.response.status = 200;
     ctx.response.body = {
       success: true,
-      message: "更新成功",
+      msg: "更新成功",
       code: 0,
       data: result
     };
@@ -93,7 +92,8 @@ export async function delete${capitalizedModule}(ctx: Context) {
     ctx.response.body = {
       success: true,
       code: 0,
-      message: "删除成功"
+      data: result,
+      msg: "删除成功"
     };
   } catch (error) {
     throw error;

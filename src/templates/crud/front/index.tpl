@@ -147,8 +147,8 @@ const initDialogForm = () => {
 };
 
 // 获取数据
-const fetchDataFn = async (params: any) => {
-  return alovaInstance.Get(`/inter/API_NAME/list`, { params });
+const fetchDataFn = async (params: IPARAMS) => {
+  return alovaInstance.Post(`/inter/API_NAME/list`, { params });
 };
 
 const {
@@ -185,14 +185,14 @@ const openCreateDialog = () => {
 };
 
 // 查看详情
-const viewDetail = (record: any) => {
+const viewDetail = (record: IRECORD) => {
   dialogMode.value = "view";
   Object.assign(dialogForm.value, record);
   dialogVisible.value = true;
 };
 
 // 编辑记录
-const editRecord = (record: any) => {
+const editRecord = (record: IRECORD) => {
   dialogMode.value = "edit";
   Object.assign(dialogForm.value, record);
   dialogVisible.value = true;
