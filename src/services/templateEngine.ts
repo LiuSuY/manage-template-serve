@@ -80,7 +80,7 @@ export class TemplateEngine {
     );
 
     // 生成返回值接口
-    result = result.replace(
+    result = result.replaceAll(
       "IRECORD",
       this.generateInterfaceName(userData.module, "Record")
     );
@@ -181,10 +181,16 @@ export class TemplateEngine {
     const templatePath = `${Deno.cwd()}/src/templates/crud/front/components/dialog.tpl`;
     const template = await this.readTemplate(templatePath);
     const dialogFormCode = this.generateDialogFormCode(fields);
-    let result = template.replace(
-      "DIALOGFORMTEMPLATE",
-      dialogFormCode.join("")
-    );
+    let result = "";
+    if (fields.length >= 8) {
+      result = template.replace(
+        "DIALOGFORMTEMPLATE",
+        `<a-row :gutter="24">${dialogFormCode.join("")}</a-row>`
+      );
+    } else {
+      result = template.replace("DIALOGFORMTEMPLATE", dialogFormCode.join(""));
+    }
+
     const dialogFormValueCode = this.generateFormValueCode(fields);
     result = result.replace(
       "DIALOGFORMTEVALUEMPLATE",
@@ -258,6 +264,67 @@ export class TemplateEngine {
   }
   //生成对话框表单代码
   private static generateDialogFormCode(fields: Array<FieldInfo>): string[] {
+    if (fields.length >= 8) {
+      return fields.map((field: FieldInfo) => {
+        // 使用正则表达式判断注释是否包含中英文冒号和数字（表示有选项配置）
+        if (field.COLUMN_COMMENT && /[：:].*\d/.test(field.COLUMN_COMMENT)) {
+          return `
+          <a-col :span="12">
+            <a-form-item field="${
+              field.COLUMN_NAME
+            }" label="${this.genSelectName(
+            field
+          )}" :rules="[{ required: true, message: '请输入${this.genSelectName(
+            field
+          )}' }]">
+              <a-select v-model="form.${
+                field.COLUMN_NAME
+              }" allow-clear placeholder="选择${this.genSelectName(field)}">
+                            ${this.generateSelectOptions(field)?.join("")}
+              </a-select>
+            </a-form-item>
+          </a-col>
+      `;
+        }
+
+        if (field.COLUMN_NAME.includes("_time")) {
+          return `<a-col :span="12">
+                <a-form-item
+                    field="${field.COLUMN_NAME}"
+                    label="${this.genSelectName(field)}"
+                    :rules="[{ required: true, message: '请输入${this.genSelectName(
+                      field
+                    )}' }]"
+                  >
+                    <a-date-picker
+                                style="width: 100%"
+                                show-time
+                                v-model="form.${field.COLUMN_NAME}"
+                                placeholder="请选择${field.COLUMN_COMMENT}"
+                                allow-clear
+                              />
+                  </a-form-item>
+              </a-col>
+          `;
+        }
+        // 这里可以根据字段类型生成不同的表单项
+        return `
+        <a-col :span="12">
+          <a-form-item
+            field="${field.COLUMN_NAME}"
+            label="${this.genSelectName(field)}"
+            :rules="[{ required: true, message: '请输入${this.genSelectName(
+              field
+            )}' }]"
+          >
+            <a-input v-model="form.${
+              field.COLUMN_NAME
+            }" placeholder="请输入" allow-clear />
+          </a-form-item>
+        </a-col>
+     `;
+      });
+    }
     return fields.map((field: FieldInfo) => {
       // 使用正则表达式判断注释是否包含中英文冒号和数字（表示有选项配置）
       if (field.COLUMN_COMMENT && /[：:].*\d/.test(field.COLUMN_COMMENT)) {
@@ -270,11 +337,30 @@ export class TemplateEngine {
         )}' }]">
         <a-select v-model="form.${
           field.COLUMN_NAME
-        }" allow-clear placeholder="选择${this.genSelectName(field)}">
-                      ${this.generateSelectOptions(field)?.join("")}
+        }" allow-clear placeholder="请选择${this.genSelectName(field)}">
+                     ${this.generateSelectOptions(field)?.join("")}
         </a-select>
        </a-form-item>
       `;
+      }
+
+      if (field.COLUMN_NAME.includes("_time")) {
+        return ` <a-form-item
+                field="${field.COLUMN_NAME}"
+                label="${this.genSelectName(field)}"
+                :rules="[{ required: true, message: '请选择${this.genSelectName(
+                  field
+                )}' }]"
+              >
+                <a-date-picker
+                            style="width: 100%"
+                            show-time
+                            v-model="form.${field.COLUMN_NAME}"
+                            placeholder="请选择${field.COLUMN_COMMENT}"
+                            allow-clear
+                          />
+              </a-form-item>
+          `;
       }
       // 这里可以根据字段类型生成不同的表单项
       return `<a-form-item
@@ -309,7 +395,7 @@ export class TemplateEngine {
                     field.COLUMN_NAME
                   }" label="${this.genSelectName(
           field
-        )}" placeholder="选择${this.genSelectName(field)}">
+        )}" placeholder="请选择${this.genSelectName(field)}">
                     <a-select v-model="formModel.${
                       field.COLUMN_NAME
                     }" allow-clear>
@@ -319,7 +405,7 @@ export class TemplateEngine {
                 </a-col>`;
       }
       if (field.COLUMN_NAME.includes("_time")) {
-       return `<a-col   
+        return `<a-col   
                 :xs="{ span: 24 }"
                 :sm="{ span: 24 }"
                 :md="{ span: 24 }"
@@ -332,8 +418,9 @@ export class TemplateEngine {
         }">
                   <a-date-picker
                     style="width: 100%"
+                    show-time
                     v-model="formModel.${field.COLUMN_NAME}"
-                    placeholder="请输入${field.COLUMN_COMMENT}"
+                    placeholder="请选择${field.COLUMN_COMMENT}"
                     allow-clear
                   />
                 </a-form-item>
@@ -365,7 +452,7 @@ export class TemplateEngine {
     fields: string[],
     lang: string
   ): Promise<string> {
-    const templatePath = `${Deno.cwd()}/src/templates/crud/front/locale/${lang}.ts`;
+    const templatePath = `${Deno.cwd()}/src/templates/crud/front/locale/${lang}.tpl`;
     const template = await this.readTemplate(templatePath);
 
     // 将现有模板中的硬编码内容替换为动态内容
@@ -410,7 +497,7 @@ export class TemplateEngine {
       .join(", ");
     const insertParams = fields
       .filter((f) => f.COLUMN_NAME !== "id")
-      .map((f) => `userData.${f.COLUMN_NAME}`)
+      .map((f) => `convertedData.${f.COLUMN_NAME}`)
       .join(",\n      ");
 
     // 生成搜索字段（通常是文本类型的字段）
@@ -429,6 +516,19 @@ export class TemplateEngine {
 
     const searchFieldsCount = searchableFields.length;
 
+    // 生成允许查询的字段列表（白名单）
+    const allowedFields = fields
+      .map((f) => f.COLUMN_NAME)
+      .map((name) => `'${name}'`)
+      .join(", ");
+
+    // 生成文本字段列表（用于模糊查询）
+    const textFields = fields
+      .filter((f) => ["varchar", "text", "longtext", "char"].includes(f.DATA_TYPE))
+      .map((f) => f.COLUMN_NAME)
+      .map((name) => `'${name}'`)
+      .join(", ");
+
     const templatePath = `${Deno.cwd()}/src/templates/crud/back/service.tpl`;
     const template = await this.readTemplate(templatePath);
 
@@ -443,7 +543,9 @@ export class TemplateEngine {
       .replaceAll("${insertParams}", insertParams)
       .replaceAll("${searchFields}", searchFields)
       .replaceAll("${searchFieldsCount}", searchFieldsCount.toString())
-      .replaceAll("${search}", "search");
+      .replaceAll("${search}", "search")
+      .replaceAll("${allowedFields}", allowedFields)
+      .replaceAll("${textFields}", `[${textFields}]`); // 修复：移除多余的方括号
   }
 
   // 生成Type文件
@@ -524,8 +626,22 @@ export class TemplateEngine {
     const deleteValidation = '  id: z.number().int().min(1, "ID必须大于0")';
 
     // 生成列表查询验证schema
-    const listValidation = `  current: z.number().int().min(1).optional().default(1),
-  pageSize: z.number().int().min(1).max(100).optional().default(10)`;
+    const listValidation = `current: z.number().int().min(1).optional().default(1),
+        pageSize: z.number().int().min(1).max(100).optional().default(10),
+        
+        // 搜索参数
+        search: z.string().optional(),
+        title: z.string().optional(),
+        content: z.string().optional(),
+        
+        // 动态字段参数
+        ${fields.filter(field => 
+          ['varchar', 'text', 'int', 'bigint', 'tinyint', 'datetime', 'date'].includes(field.DATA_TYPE) &&
+          !['id', 'create_time', 'update_time', 'delete_time'].includes(field.COLUMN_NAME)
+        ).map(field => {
+          const fieldType = ['int', 'bigint', 'tinyint'].includes(field.DATA_TYPE) ? 'number().int()' : 'string()';
+          return `${field.COLUMN_NAME}: z.${fieldType}.optional()`;
+        }).join(',\n    ')}`;
 
     const templatePath = `${Deno.cwd()}/src/templates/crud/back/validator.tpl`;
     const template = await this.readTemplate(templatePath);
@@ -553,9 +669,19 @@ export class TemplateEngine {
     const fieldName = COLUMN_NAME;
     const isOptional = IS_NULLABLE === "YES" || isUpdate;
     const comment = COLUMN_COMMENT || fieldName;
-
+  
     let validation = "";
-
+  
+    // 特殊处理时间字段
+    const timeFields = ['created_at', 'updated_at', 'delete_time', 'create_time', 'update_time', 'start_time', 'end_time'];
+    if (timeFields.includes(fieldName)) {
+      validation = 'z.string().regex(/^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$/, "请输入有效的时间格式(YYYY-MM-DD HH:mm:ss)")';
+      if (isOptional) {
+        validation += ".optional()";
+      }
+      return `  ${fieldName}: ${validation}`;
+    }
+  
     // 根据数据类型生成基础验证
     switch (DATA_TYPE) {
       case "varchar":
@@ -570,7 +696,7 @@ export class TemplateEngine {
           validation += `.max(${CHARACTER_MAXIMUM_LENGTH}, "${comment}长度不能超过${CHARACTER_MAXIMUM_LENGTH}个字符")`;
         }
         break;
-
+  
       case "int":
       case "bigint":
       case "tinyint":
@@ -579,19 +705,18 @@ export class TemplateEngine {
           const options = this.extractOptionsFromComment(COLUMN_COMMENT);
           if (options.length > 0) {
             const enumValues = options.map((opt) => opt[0]).join(", ");
-            // 使用 z.number().refine() 而不是 z.enum()
-            validation = `z.number().int().refine(val => [${enumValues}].includes(val), { message: "请选择有效的${comment}" })`;
+            validation = `z.coerce.number().int().refine(val => [${enumValues}].includes(val), { message: "请选择有效的${comment}" })`;
           } else {
-            validation = "z.number().int()";
+            validation = "z.coerce.number().int()";
           }
         } else {
-          validation = "z.number().int()";
+          validation = "z.coerce.number().int()";
           if (!isOptional) {
             validation += `.min(1, "${comment}必须大于0")`;
           }
         }
         break;
-
+  
       case "decimal":
       case "float":
       case "double":
@@ -600,34 +725,34 @@ export class TemplateEngine {
           validation += `.min(0, "${comment}不能为负数")`;
         }
         break;
-
+  
       case "datetime":
       case "timestamp":
         validation = "z.string().datetime()";
         break;
-
+  
       case "date":
         validation =
           'z.string().regex(/^\\d{4}-\\d{2}-\\d{2}$/, "请输入有效的日期格式(YYYY-MM-DD)")';
         break;
-
+  
       case "boolean":
       case "bit":
         validation = "z.boolean()";
         break;
-
+  
       default:
         validation = "z.string()";
         if (!isOptional) {
           validation += `.min(1, "${comment}不能为空")`;
         }
     }
-
+  
     // 添加可选标记
     if (isOptional) {
       validation += ".optional()";
     }
-
+  
     return `  ${fieldName}: ${validation}`;
   }
 
@@ -646,6 +771,26 @@ export class TemplateEngine {
   }
 
   // 生成Router文件
+  static async generateFrontRouter(
+    userData: CreateCrudData,
+    fields: Array<FieldInfo>
+  ): Promise<string> {
+    const { module, name } = userData;
+    const moduleUpperCase = module.toUpperCase().replace(/-/g, '_');
+    const order = 20; // 默认排序，可以根据需要调整
+  
+    const templatePath = `${Deno.cwd()}/src/templates/crud/front/router.tpl`;
+    const template = await this.readTemplate(templatePath);
+  
+    // 替换模板中的变量
+    return template
+      .replaceAll("${moduleUpperCase}", moduleUpperCase)
+      .replaceAll("${module}", module)
+      .replaceAll("${moduleName}", name)
+      .replaceAll("${order}", order.toString());
+  }
+
+  // 生成后端Router文件
   static async generateRouter(
     userData: CreateCrudData,
     fields: Array<FieldInfo>

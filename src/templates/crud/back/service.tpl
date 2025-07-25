@@ -1,9 +1,13 @@
 import { query } from "../database/connection.ts";
 import { ${capitalizedModule}, Create${capitalizedModule}Data, Update${capitalizedModule}Data } from "../types/${module}.ts";
 import { PaginationQuery } from "../types/common.ts";
+import dayjs from "https://esm.sh/dayjs@1.11.10";
 
 export class ${capitalizedModule}Service {
   static async create${capitalizedModule}(userData: Create${capitalizedModule}Data): Promise<${capitalizedModule}> {
+    // 转换时间字段格式
+    const convertedData = this.convertTimeFields(userData);
+    
     const sql = `
       INSERT INTO ${table} (${insertFields})
       VALUES (${insertPlaceholders})
@@ -16,14 +20,51 @@ export class ${capitalizedModule}Service {
     return this.get${capitalizedModule}ById(result.insertId);
   }
   
+  // 添加时间格式化函数（输出时使用）
+  private static formatTimeFields(data: any): any {
+    if (!data) return data;
+    
+    const timeFields = ['created_at', 'updated_at', 'delete_time', 'create_time', 'update_time', 'start_time', 'end_time'];
+    const formatted = { ...data };
+    
+    timeFields.forEach(field => {
+      if (formatted[field] && typeof formatted[field] === 'number') {
+        formatted[field] = dayjs(formatted[field] * 1000).format('YYYY-MM-DD HH:mm:ss');
+      }
+    });
+    
+    return formatted;
+  }
+  
+  // 添加时间字段转换函数（输入时使用）
+  private static convertTimeFields(data: any): any {
+    if (!data) return data;
+    
+    const timeFields = ['created_at', 'updated_at', 'delete_time', 'create_time', 'update_time', 'start_time', 'end_time'];
+    const converted = { ...data };
+    
+    timeFields.forEach(field => {
+      if (converted[field] && typeof converted[field] === 'string') {
+        // 将 yyyy-mm-dd hh:mm:ss 格式字符串转换为时间戳（秒）
+        const timestamp = dayjs(converted[field]).unix();
+        converted[field] = timestamp;
+      }
+    });
+    
+    return converted;
+  }
+  
+  // 修改 get${capitalizedModule}ById 方法
   static async get${capitalizedModule}ById(id: number): Promise<${capitalizedModule} | null> {
     const sql = "SELECT ${fieldNames} FROM ${table} WHERE id = ?";
     const rows = await query(sql, [id]) as ${capitalizedModule}[];
-    return rows[0] || null;
+    const result = rows[0] || null;
+    return result ? this.formatTimeFields(result) : null;
   }
   
+  // 修改 get${capitalizedModule}List 方法 - 支持通用查询
   static async get${capitalizedModule}List(queryParams: any) {
-    const { page = 1, limit = 10, search, filters = {}, sortBy = 'id', sortOrder = 'DESC' } = queryParams;
+    const { page = 1, limit = 10, search, sortBy = 'id', sortOrder = 'DESC', ...filters } = queryParams;
     const offset = (page - 1) * limit;
     
     let sql = "SELECT ${fieldNames} FROM ${table}";
@@ -31,19 +72,40 @@ export class ${capitalizedModule}Service {
     const params: any[] = [];
     const conditions: string[] = [];
     
-    // 处理搜索条件
+    // 处理搜索条件（模糊查询）
     if (search) {
       conditions.push("(${searchFields})");
       const searchValue = `%${search}%`;
-      // 为每个搜索字段添加参数
       Array(${searchFieldsCount}).fill(0).forEach(() => params.push(searchValue));
     }
     
-    // 处理过滤条件
+    // 处理所有其他查询条件（通用查询）
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') {
-        conditions.push(`${key} = ?`);
-        params.push(value);
+        // 支持的查询字段白名单
+        const allowedFields = [${allowedFields}];
+        
+        if (allowedFields.includes(key)) {
+          // 对于时间字段，支持范围查询
+          if (key.includes('_time') && typeof value === 'object') {
+            if (value.start) {
+              conditions.push(`${key} >= ?`);
+              params.push(dayjs(value.start).unix());
+            }
+            if (value.end) {
+              conditions.push(`${key} <= ?`);
+              params.push(dayjs(value.end).unix());
+            }
+          } else if (${textFields}.includes(key)) {
+            // 对于文本字段，支持模糊查询
+            conditions.push(`${key} LIKE ?`);
+            params.push(`%${value}%`);
+          } else {
+            // 其他字段精确匹配
+            conditions.push(`${key} = ?`);
+            params.push(value);
+          }
+        }
       }
     });
     
@@ -67,7 +129,7 @@ export class ${capitalizedModule}Service {
     
     return {
       data: {
-        list: data,
+        list: data.map(item => this.formatTimeFields(item)),
         total: total || 0,
         page,
         limit,
@@ -77,9 +139,12 @@ export class ${capitalizedModule}Service {
   }
   
   static async update${capitalizedModule}(id: number, userData: Update${capitalizedModule}Data): Promise<${capitalizedModule} | null> {
+    // 转换时间字段格式
+    const convertedData = this.convertTimeFields(userData);
+    
     // 过滤掉 undefined 值
     const filteredData = Object.fromEntries(
-      Object.entries(userData).filter(([_, value]) => value !== undefined)
+      Object.entries(convertedData).filter(([_, value]) => value !== undefined)
     );
     
     if (Object.keys(filteredData).length === 0) {

@@ -24,14 +24,14 @@ router.get("/:id",
 );
 
 // 更新${module}
-router.put("/update",
+router.post("/update",
   validateBody(update${capitalizedModule}Schema),
   ${module}Controller.update${capitalizedModule}
 );
 
 // 删除${module}
-router.delete("/delete/:id",
-  validateQuery(delete${capitalizedModule}Schema),
+router.post("/delete",
+  validateBody(delete${capitalizedModule}Schema),
   ${module}Controller.delete${capitalizedModule}
 );
 

@@ -13,7 +13,10 @@ ${deleteValidation}
 });
 
 export const list${capitalizedModule}Schema = z.object({
-${listValidation}
+  params: z.object({
+    current: z.number().int().min(1).optional().default(1),
+    pageSize: z.number().int().min(1).max(100).optional().default(10)
+  }).passthrough()
 });
 
 export type Create${capitalizedModule} = z.infer<typeof create${capitalizedModule}Schema>;

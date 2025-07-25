@@ -92,7 +92,7 @@
                   :xl="{ span: 6 }"
                   :xxl="{ span: 6 }"
                 >
-                  <a-form-item field="status" label="状态" placeholder="选择状态">
+                  <a-form-item field="status" label="状态" placeholder="请选择状态">
                     <a-select v-model="formModel.status" allow-clear>
                       <a-option :value="1">可用</a-option><a-option :value="0">禁用</a-option>
                     </a-select>
@@ -120,7 +120,7 @@
                   :xl="{ span: 6 }"
                   :xxl="{ span: 6 }"
                 >
-                  <a-form-item field="role_type" label="查看权限" placeholder="选择查看权限">
+                  <a-form-item field="role_type" label="查看权限" placeholder="请选择查看权限">
                     <a-select v-model="formModel.role_type" allow-clear>
                       <a-option :value="0">所有人</a-option><a-option :value="1">部门</a-option><a-option :value="2">人员</a-option>
                     </a-select>
@@ -166,8 +166,9 @@
                 <a-form-item field="start_time" label="展示开始时间">
                   <a-date-picker
                     style="width: 100%"
+                    show-time
                     v-model="formModel.start_time"
-                    placeholder="请输入展示开始时间"
+                    placeholder="请选择展示开始时间"
                     allow-clear
                   />
                 </a-form-item>
@@ -182,8 +183,9 @@
                 <a-form-item field="end_time" label="展示结束时间">
                   <a-date-picker
                     style="width: 100%"
+                    show-time
                     v-model="formModel.end_time"
-                    placeholder="请输入展示结束时间"
+                    placeholder="请选择展示结束时间"
                     allow-clear
                   />
                 </a-form-item>
@@ -213,8 +215,9 @@
                 <a-form-item field="create_time" label="create_time">
                   <a-date-picker
                     style="width: 100%"
+                    show-time
                     v-model="formModel.create_time"
-                    placeholder="请输入"
+                    placeholder="请选择"
                     allow-clear
                   />
                 </a-form-item>
@@ -229,8 +232,9 @@
                 <a-form-item field="update_time" label="update_time">
                   <a-date-picker
                     style="width: 100%"
+                    show-time
                     v-model="formModel.update_time"
-                    placeholder="请输入"
+                    placeholder="请选择"
                     allow-clear
                   />
                 </a-form-item>
@@ -245,8 +249,9 @@
                 <a-form-item field="delete_time" label="删除时间">
                   <a-date-picker
                     style="width: 100%"
+                    show-time
                     v-model="formModel.delete_time"
-                    placeholder="请输入删除时间"
+                    placeholder="请选择删除时间"
                     allow-clear
                   />
                 </a-form-item>
@@ -353,8 +358,6 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
-import { useI18n } from "vue-i18n";
 import type { TableColumnData } from "@arco-design/web-vue/es/table/interface";
 import { useTable } from "@/hooks/useTable";
 import { useTableOperations } from "@/hooks/useTableOperations";
@@ -409,7 +412,6 @@ interface INoteParams {
   [key: string]: unknown;
 }
 
-const { t } = useI18n();
 const formModel = ref(generateFormModel());
 
 // 弹窗相关数据
@@ -445,13 +447,14 @@ const columns = ref<Column[]>([{"title":"id","dataIndex":"id","key":"id","ellips
 
 // 搜索
 const search = () => {
-  Object.assign(params, {});
+  Object.assign(params, formModel.value); // 将表单数据赋值给搜索参数
   searchData();
 };
 
 // 重置搜索条件
 const reset = () => {
   formModel.value = generateFormModel();
+  Object.assign(params, formModel.value); // 确保参数也被重置
   resetData();
 };
 
@@ -463,14 +466,15 @@ const openCreateDialog = () => {
 };
 
 // 查看详情
-const viewDetail = (record: IRECORD) => {
+const viewDetail = async (record: INoteRecord) => {
   dialogMode.value = "view";
-  Object.assign(dialogForm.value, record);
+  const res = await alovaInstance.Get(`/inter/note/${record.id}`);
+  Object.assign(dialogForm.value, res);
   dialogVisible.value = true;
 };
 
 // 编辑记录
-const editRecord = (record: IRECORD) => {
+const editRecord = (record: INoteRecord) => {
   dialogMode.value = "edit";
   Object.assign(dialogForm.value, record);
   dialogVisible.value = true;
@@ -488,7 +492,7 @@ const handleDialogSubmit = async (formData: Record<string, unknown>) => {
       dialogMode.value === "create"
         ? "/inter/note/create"
         : "/inter/note/update";
-    await alovaInstance.Post(api, formData);
+    await alovaInstance.Post(api, formData,  {tips: true});
     closeDialog();
     refreshData();
   } catch (error) {
@@ -497,9 +501,9 @@ const handleDialogSubmit = async (formData: Record<string, unknown>) => {
 };
 
 // 删除记录
-const deleteRecord = async (record: Record<string, unknown>) => {
+const deleteRecord = async (record: INoteRecord) => {
   try {
-    await alovaInstance.Post("/inter/note/delete", { id: record.id });
+    await alovaInstance.Post("/inter/note/delete", { id: record.id },{tips: true});
     refreshData();
   } catch (error) {
     console.error("删除失败", error);
@@ -527,17 +531,5 @@ const refreshData = () => {
 </script>
 
 <style scoped lang="less">
-.container {
-  padding: 10px;
-}
 
-.container {
-  padding: 10px;
-}
-:deep(.container .general-card > .arco-card-body) {
-    padding: 10px;
-}
-:deep(.general-card > .arco-card-header) {
-    padding: 10px;
-}
 </style>

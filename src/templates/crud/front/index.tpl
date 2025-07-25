@@ -112,8 +112,6 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
-import { useI18n } from "vue-i18n";
 import type { TableColumnData } from "@arco-design/web-vue/es/table/interface";
 import { useTable } from "@/hooks/useTable";
 import { useTableOperations } from "@/hooks/useTableOperations";
@@ -131,7 +129,6 @@ RECORDS_TEMPLATE
 
 PARAMS_TEMPLATE
 
-const { t } = useI18n();
 const formModel = ref(generateFormModel());
 
 // 弹窗相关数据
@@ -167,13 +164,14 @@ const columns = ref<Column[]>(COLUMNSTEMPLATE);
 
 // 搜索
 const search = () => {
-  Object.assign(params, {});
+  Object.assign(params, formModel.value); // 将表单数据赋值给搜索参数
   searchData();
 };
 
 // 重置搜索条件
 const reset = () => {
   formModel.value = generateFormModel();
+  Object.assign(params, formModel.value); // 确保参数也被重置
   resetData();
 };
 
@@ -185,9 +183,10 @@ const openCreateDialog = () => {
 };
 
 // 查看详情
-const viewDetail = (record: IRECORD) => {
+const viewDetail = async (record: IRECORD) => {
   dialogMode.value = "view";
-  Object.assign(dialogForm.value, record);
+  const res = await alovaInstance.Get(`/inter/API_NAME/${record.id}`);
+  Object.assign(dialogForm.value, res);
   dialogVisible.value = true;
 };
 
@@ -210,7 +209,7 @@ const handleDialogSubmit = async (formData: Record<string, unknown>) => {
       dialogMode.value === "create"
         ? "/inter/API_NAME/create"
         : "/inter/API_NAME/update";
-    await alovaInstance.Post(api, formData);
+    await alovaInstance.Post(api, formData,  {tips: true});
     closeDialog();
     refreshData();
   } catch (error) {
@@ -219,9 +218,9 @@ const handleDialogSubmit = async (formData: Record<string, unknown>) => {
 };
 
 // 删除记录
-const deleteRecord = async (record: Record<string, unknown>) => {
+const deleteRecord = async (record: IRECORD) => {
   try {
-    await alovaInstance.Post("/inter/API_NAME/delete", { id: record.id });
+    await alovaInstance.Post("/inter/API_NAME/delete", { id: record.id },{tips: true});
     refreshData();
   } catch (error) {
     console.error("删除失败", error);
@@ -249,17 +248,5 @@ const refreshData = () => {
 </script>
 
 <style scoped lang="less">
-.container {
-  padding: 10px;
-}
 
-.container {
-  padding: 10px;
-}
-:deep(.container .general-card > .arco-card-body) {
-    padding: 10px;
-}
-:deep(.general-card > .arco-card-header) {
-    padding: 10px;
-}
 </style>

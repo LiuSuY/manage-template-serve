@@ -17,6 +17,7 @@ app.use(oakCors({
 // 全局错误处理中间件（必须在最前面）
 app.use(errorHandler);
 
+
 // 路由
 app.use(routes.routes());
 app.use(routes.allowedMethods());

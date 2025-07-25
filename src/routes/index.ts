@@ -1,11 +1,10 @@
 import { Router } from "@oak/oak";
 import userRoutes from "./user.ts";
-import crudRoutes from './crud.ts';
-import noteRoutes from './note.ts';
-
+import authRoutes from "./auth.ts";
+import noteRoutes from "./note.ts";
+import crudRoutes from "./crud.ts";
 
 const router = new Router();
-
 // 健康检查
 router.get("/", (ctx) => {
   ctx.response.body = {
@@ -15,15 +14,12 @@ router.get("/", (ctx) => {
   };
 });
 
-// 注册子路由
-router.use(userRoutes.routes());
-router.use(userRoutes.allowedMethods());
+// 认证路由（无需认证）
+router.use(authRoutes.routes(), authRoutes.allowedMethods());
 
-router.use(crudRoutes.routes());
-router.use(crudRoutes.allowedMethods());
-
-
-router.use(noteRoutes.routes());
-router.use(noteRoutes.allowedMethods());
+// 其他路由（可能需要认证）
+router.use(userRoutes.routes(), userRoutes.allowedMethods());
+router.use(noteRoutes.routes(), noteRoutes.allowedMethods());
+router.use(crudRoutes.routes(), crudRoutes.allowedMethods());
 
 export default router;

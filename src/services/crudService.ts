@@ -155,6 +155,25 @@ export class CrudService {
 
     await this.fileApiCopy(module);
     await this.updateRoutes(module);
+    
+    // 生成前端路由文件
+    const frontRouterContent = await TemplateEngine.generateFrontRouter(
+      userData,
+      this.filterFields(fields)
+    );
+    
+    // 写入前端路由文件
+    const frontRouterDir = `${Deno.cwd()}/src/gen/front/routes`;
+    try {
+      await Deno.mkdir(frontRouterDir, { recursive: true });
+    } catch (error) {
+      // 文件夹已存在，忽略错误
+    }
+    
+    await Deno.writeTextFile(
+      `${frontRouterDir}/${module}.ts`,
+      frontRouterContent
+    );
   }
   private static async fileCopy(sourcePath: string, targetPath: string) {
     try {

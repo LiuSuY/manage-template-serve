@@ -24,14 +24,14 @@ router.get("/:id",
 );
 
 // 更新note
-router.put("/update",
+router.post("/update",
   validateBody(updateNoteSchema),
   noteController.updateNote
 );
 
 // 删除note
-router.delete("/delete/:id",
-  validateQuery(deleteNoteSchema),
+router.post("/delete",
+  validateBody(deleteNoteSchema),
   noteController.deleteNote
 );
 

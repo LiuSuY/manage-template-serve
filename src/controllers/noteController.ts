@@ -21,12 +21,25 @@ export async function createNote(ctx: Context) {
 
 export async function getNoteList(ctx: Context) {
   try {
-    const queryParams = ctx.request.url.searchParams;
-    const result = await NoteService.getNoteList({
-      page: Number(queryParams.get('page')) || 1,
-      limit: Number(queryParams.get('limit')) || 10,
-      search: queryParams.get('search') || undefined
+    // 从请求体中获取参数，而不是从URL查询参数
+    const requestBody = ctx.state.validatedBody || {};
+    const queryParams = requestBody.params || {};
+    
+    // 构建查询参数对象
+    const params: any = {
+      page: Number(queryParams.page) || Number(queryParams.current) || 1,
+      limit: Number(queryParams.limit) || Number(queryParams.pageSize) || 10,
+      search: queryParams.search || undefined
+    };
+    
+    // 添加所有其他查询参数
+    Object.entries(queryParams).forEach(([key, value]) => {
+      if (!['page', 'limit', 'current', 'pageSize', 'search'].includes(key) && value) {
+        params[key] = value;
+      }
     });
+    
+    const result = await NoteService.getNoteList(params);
     
     ctx.response.status = 200;
     ctx.response.body = {
@@ -74,7 +87,7 @@ export async function updateNote(ctx: Context) {
     ctx.response.status = 200;
     ctx.response.body = {
       success: true,
-      msg: "更新成功",
+      msg: "修改成功",
       code: 0,
       data: result
     };

@@ -9,6 +9,7 @@
     popup-container="#model"
     @update:visible="updateVisible"
     modal-class="model-dialog"
+    width="50%"
   >
     <a-form
       ref="formRef"
@@ -16,116 +17,190 @@
       :disabled="mode === 'view'"
       label-align="right"
       auto-label-width
+      @submit="handleFormSubmit"
     >
-      <a-form-item
-        field="id"
-        label="id"
-        :rules="[{ required: true, message: '请输入id' }]"
-      >
-        <a-input v-model="form.id" placeholder="请输入" allow-clear />
-      </a-form-item>
-     <a-form-item
-        field="cate_id"
-        label="公告分类ID"
-        :rules="[{ required: true, message: '请输入公告分类ID' }]"
-      >
-        <a-input v-model="form.cate_id" placeholder="请输入" allow-clear />
-      </a-form-item>
-     <a-form-item
-        field="title"
-        label="标题"
-        :rules="[{ required: true, message: '请输入标题' }]"
-      >
-        <a-input v-model="form.title" placeholder="请输入" allow-clear />
-      </a-form-item>
-     <a-form-item
-        field="content"
-        label="公告内容"
-        :rules="[{ required: true, message: '请输入公告内容' }]"
-      >
-        <a-input v-model="form.content" placeholder="请输入" allow-clear />
-      </a-form-item>
-     <a-form-item
-        field="src"
-        label="关联链接"
-        :rules="[{ required: true, message: '请输入关联链接' }]"
-      >
-        <a-input v-model="form.src" placeholder="请输入" allow-clear />
-      </a-form-item>
-     <a-form-item field="status" label="状态" :rules="[{ required: true, message: '请输入状态' }]">
-        <a-select v-model="form.status" allow-clear placeholder="选择状态">
-                      <a-option :value="1">可用</a-option><a-option :value="0">禁用</a-option>
-        </a-select>
-       </a-form-item>
-      <a-form-item
-        field="file_ids"
-        label="相关附件"
-        :rules="[{ required: true, message: '请输入相关附件' }]"
-      >
-        <a-input v-model="form.file_ids" placeholder="请输入" allow-clear />
-      </a-form-item>
-     <a-form-item field="role_type" label="查看权限" :rules="[{ required: true, message: '请输入查看权限' }]">
-        <a-select v-model="form.role_type" allow-clear placeholder="选择查看权限">
-                      <a-option :value="0">所有人</a-option><a-option :value="1">部门</a-option><a-option :value="2">人员</a-option>
-        </a-select>
-       </a-form-item>
-      <a-form-item
-        field="role_dids"
-        label="可查看部门"
-        :rules="[{ required: true, message: '请输入可查看部门' }]"
-      >
-        <a-input v-model="form.role_dids" placeholder="请输入" allow-clear />
-      </a-form-item>
-     <a-form-item
-        field="role_uids"
-        label="可查看用户"
-        :rules="[{ required: true, message: '请输入可查看用户' }]"
-      >
-        <a-input v-model="form.role_uids" placeholder="请输入" allow-clear />
-      </a-form-item>
-     <a-form-item
-        field="start_time"
-        label="展示开始时间"
-        :rules="[{ required: true, message: '请输入展示开始时间' }]"
-      >
-        <a-input v-model="form.start_time" placeholder="请输入" allow-clear />
-      </a-form-item>
-     <a-form-item
-        field="end_time"
-        label="展示结束时间"
-        :rules="[{ required: true, message: '请输入展示结束时间' }]"
-      >
-        <a-input v-model="form.end_time" placeholder="请输入" allow-clear />
-      </a-form-item>
-     <a-form-item
-        field="admin_id"
-        label="发布人id"
-        :rules="[{ required: true, message: '请输入发布人id' }]"
-      >
-        <a-input v-model="form.admin_id" placeholder="请输入" allow-clear />
-      </a-form-item>
-     <a-form-item
-        field="create_time"
-        label="create_time"
-        :rules="[{ required: true, message: '请输入create_time' }]"
-      >
-        <a-input v-model="form.create_time" placeholder="请输入" allow-clear />
-      </a-form-item>
-     <a-form-item
-        field="update_time"
-        label="update_time"
-        :rules="[{ required: true, message: '请输入update_time' }]"
-      >
-        <a-input v-model="form.update_time" placeholder="请输入" allow-clear />
-      </a-form-item>
-     <a-form-item
-        field="delete_time"
-        label="删除时间"
-        :rules="[{ required: true, message: '请输入删除时间' }]"
-      >
-        <a-input v-model="form.delete_time" placeholder="请输入" allow-clear />
-      </a-form-item>
+      <a-row :gutter="24">
+        <a-col :span="12">
+          <a-form-item
+            field="id"
+            label="id"
+            :rules="[{ required: true, message: '请输入id' }]"
+          >
+            <a-input v-model="form.id" placeholder="请输入" allow-clear />
+          </a-form-item>
+        </a-col>
+     
+        <a-col :span="12">
+          <a-form-item
+            field="cate_id"
+            label="公告分类ID"
+            :rules="[{ required: true, message: '请输入公告分类ID' }]"
+          >
+            <a-input v-model="form.cate_id" placeholder="请输入" allow-clear />
+          </a-form-item>
+        </a-col>
+     
+        <a-col :span="12">
+          <a-form-item
+            field="title"
+            label="标题"
+            :rules="[{ required: true, message: '请输入标题' }]"
+          >
+            <a-input v-model="form.title" placeholder="请输入" allow-clear />
+          </a-form-item>
+        </a-col>
+     
+        <a-col :span="12">
+          <a-form-item
+            field="content"
+            label="公告内容"
+            :rules="[{ required: true, message: '请输入公告内容' }]"
+          >
+            <a-input v-model="form.content" placeholder="请输入" allow-clear />
+          </a-form-item>
+        </a-col>
+     
+        <a-col :span="12">
+          <a-form-item
+            field="src"
+            label="关联链接"
+            :rules="[{ required: true, message: '请输入关联链接' }]"
+          >
+            <a-input v-model="form.src" placeholder="请输入" allow-clear />
+          </a-form-item>
+        </a-col>
+     
+          <a-col :span="12">
+            <a-form-item field="status" label="状态" :rules="[{ required: true, message: '请输入状态' }]">
+              <a-select v-model="form.status" allow-clear placeholder="选择状态">
+                            <a-option :value="1">可用</a-option><a-option :value="0">禁用</a-option>
+              </a-select>
+            </a-form-item>
+          </a-col>
       
+        <a-col :span="12">
+          <a-form-item
+            field="file_ids"
+            label="相关附件"
+            :rules="[{ required: true, message: '请输入相关附件' }]"
+          >
+            <a-input v-model="form.file_ids" placeholder="请输入" allow-clear />
+          </a-form-item>
+        </a-col>
+     
+          <a-col :span="12">
+            <a-form-item field="role_type" label="查看权限" :rules="[{ required: true, message: '请输入查看权限' }]">
+              <a-select v-model="form.role_type" allow-clear placeholder="选择查看权限">
+                            <a-option :value="0">所有人</a-option><a-option :value="1">部门</a-option><a-option :value="2">人员</a-option>
+              </a-select>
+            </a-form-item>
+          </a-col>
+      
+        <a-col :span="12">
+          <a-form-item
+            field="role_dids"
+            label="可查看部门"
+            :rules="[{ required: true, message: '请输入可查看部门' }]"
+          >
+            <a-input v-model="form.role_dids" placeholder="请输入" allow-clear />
+          </a-form-item>
+        </a-col>
+     
+        <a-col :span="12">
+          <a-form-item
+            field="role_uids"
+            label="可查看用户"
+            :rules="[{ required: true, message: '请输入可查看用户' }]"
+          >
+            <a-input v-model="form.role_uids" placeholder="请输入" allow-clear />
+          </a-form-item>
+        </a-col>
+     <a-col :span="12">
+                <a-form-item
+                    field="start_time"
+                    label="展示开始时间"
+                    :rules="[{ required: true, message: '请输入展示开始时间' }]"
+                  >
+                    <a-date-picker
+                                style="width: 100%"
+                                show-time
+                                v-model="form.start_time"
+                                placeholder="请选择展示开始时间"
+                                allow-clear
+                              />
+                  </a-form-item>
+              </a-col>
+          <a-col :span="12">
+                <a-form-item
+                    field="end_time"
+                    label="展示结束时间"
+                    :rules="[{ required: true, message: '请输入展示结束时间' }]"
+                  >
+                    <a-date-picker
+                                style="width: 100%"
+                                show-time
+                                v-model="form.end_time"
+                                placeholder="请选择展示结束时间"
+                                allow-clear
+                              />
+                  </a-form-item>
+              </a-col>
+          
+        <a-col :span="12">
+          <a-form-item
+            field="admin_id"
+            label="发布人id"
+            :rules="[{ required: true, message: '请输入发布人id' }]"
+          >
+            <a-input v-model="form.admin_id" placeholder="请输入" allow-clear />
+          </a-form-item>
+        </a-col>
+     <a-col :span="12">
+                <a-form-item
+                    field="create_time"
+                    label="create_time"
+                    :rules="[{ required: true, message: '请输入create_time' }]"
+                  >
+                    <a-date-picker
+                                style="width: 100%"
+                                show-time
+                                v-model="form.create_time"
+                                placeholder="请选择"
+                                allow-clear
+                              />
+                  </a-form-item>
+              </a-col>
+          <a-col :span="12">
+                <a-form-item
+                    field="update_time"
+                    label="update_time"
+                    :rules="[{ required: true, message: '请输入update_time' }]"
+                  >
+                    <a-date-picker
+                                style="width: 100%"
+                                show-time
+                                v-model="form.update_time"
+                                placeholder="请选择"
+                                allow-clear
+                              />
+                  </a-form-item>
+              </a-col>
+          <a-col :span="12">
+                <a-form-item
+                    field="delete_time"
+                    label="删除时间"
+                    :rules="[{ required: true, message: '请输入删除时间' }]"
+                  >
+                    <a-date-picker
+                                style="width: 100%"
+                                show-time
+                                v-model="form.delete_time"
+                                placeholder="请选择删除时间"
+                                allow-clear
+                              />
+                  </a-form-item>
+              </a-col>
+          </a-row> 
     </a-form>
 
     <template #footer>
@@ -149,11 +224,6 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, watch } from "vue";
-import { useI18n } from "vue-i18n";
-
-const { t } = useI18n();
-
 // 定义组件的属性
 const props = defineProps({
   visible: {
@@ -214,14 +284,13 @@ watch(
 );
 
 // 监听visible变化，重置表单
+// 监听visible变化，重置表单
 watch(
   () => props.visible,
-  (newVal) => {
-    if (!newVal) {
-      // 关闭弹窗时重置表单
-      if (props.mode === "create") {
-        resetForm();
-      }
+  () => {
+    // 关闭弹窗时重置表单
+    if (props.mode === "create") {
+      resetForm();
     }
   }
 );
@@ -244,18 +313,23 @@ const handleCancel = () => {
 };
 
 // 提交表单
-const handleSubmit = async () => {
+const handleSubmit = () => {
   if (!formRef.value) return;
-
+  formRef.value.handleSubmit();
+};
+// 提交表单
+const handleFormSubmit = async({values, errors}) => {
   try {
-    await formRef.value.validate();
-    emit("submit", { ...form.value });
+    if(errors){
+      return false
+    }
+    emit("submit", { ...values });
     return true;
   } catch (error) {
     console.error("表单验证失败", error);
     return false;
   }
-};
+}
 </script>
 
 <style scoped lang="less">

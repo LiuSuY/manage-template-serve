@@ -9,6 +9,7 @@
     popup-container="#model"
     @update:visible="updateVisible"
     modal-class="model-dialog"
+    width="50%"
   >
     <a-form
       ref="formRef"
@@ -16,6 +17,7 @@
       :disabled="mode === 'view'"
       label-align="right"
       auto-label-width
+      @submit="handleFormSubmit"
     >
       DIALOGFORMTEMPLATE 
     </a-form>
@@ -41,11 +43,6 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, watch } from "vue";
-import { useI18n } from "vue-i18n";
-
-const { t } = useI18n();
-
 // 定义组件的属性
 const props = defineProps({
   visible: {
@@ -90,14 +87,13 @@ watch(
 );
 
 // 监听visible变化，重置表单
+// 监听visible变化，重置表单
 watch(
   () => props.visible,
-  (newVal) => {
-    if (!newVal) {
-      // 关闭弹窗时重置表单
-      if (props.mode === "create") {
-        resetForm();
-      }
+  () => {
+    // 关闭弹窗时重置表单
+    if (props.mode === "create") {
+      resetForm();
     }
   }
 );
@@ -120,18 +116,23 @@ const handleCancel = () => {
 };
 
 // 提交表单
-const handleSubmit = async () => {
+const handleSubmit = () => {
   if (!formRef.value) return;
-
+  formRef.value.handleSubmit();
+};
+// 提交表单
+const handleFormSubmit = async({values, errors}) => {
   try {
-    await formRef.value.validate();
-    emit("submit", { ...form.value });
+    if(errors){
+      return false
+    }
+    emit("submit", { ...values });
     return true;
   } catch (error) {
     console.error("表单验证失败", error);
     return false;
   }
-};
+}
 </script>
 
 <style scoped lang="less">
